@@ -1,4 +1,7 @@
 import json
+
+from tabulate import tabulate
+
 from session import Session
 
 
@@ -7,7 +10,7 @@ class LStar(Session):
         super().__init__()
         self.alphabet = list(letters)
         self.suffixes = [""]
-        self.main_table = {"": [0]}
+        self.main_table = {"": ['0']}
         self.extended_table = {}
 
     def add_suffixes_from_word(self, word):
@@ -25,6 +28,8 @@ class LStar(Session):
                     self.extended_table[key].append(response)
 
     def add_prefix(self, prefix):
+        if prefix in self.extended_table or prefix in self.main_table:
+            return
         self.extended_table[prefix] = []
 
         for suffix in self.suffixes:
@@ -39,7 +44,7 @@ class LStar(Session):
 
     def build_main_prefixes(self):
         for key, value in list(self.extended_table.items()):
-            if value not in self.main_table.values() and list(self.extended_table.values()).count(value) == 1:
+            if value not in list(self.main_table.values()):
                 self.main_table[key] = value
                 self.extended_table.pop(key)
 
@@ -79,3 +84,22 @@ class LStar(Session):
                 complementary_prefixes_str,
                 suffixes_str,
                 table_str]
+
+    def __str__(self):
+        output_table = [[""] + self.suffixes]  # Заголовок с пустой ячейкой слева и суффиксами сверху
+
+        # Добавляем строки с содержимым `main_table`
+        for key in self.main_table:
+            row = [key] + self.main_table[key]
+            output_table.append(row)
+
+        # Добавляем строку с разделителем "+"
+        output_table.append(["+"] + [""] * (len(self.suffixes) - 1))
+
+        # Добавляем строки с содержимым `extended_table`
+        for key in self.extended_table:
+            row = [key] + self.extended_table[key]
+            output_table.append(row)
+
+        # Форматируем таблицу с помощью `tabulate`
+        return tabulate(output_table, headers="firstrow", tablefmt="github")

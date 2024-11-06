@@ -37,7 +37,6 @@ class Session:
                 data=json.dumps(data))
 
             if response.status_code == 200:
-                print(response.text)
                 answer = response.text
                 return answer
 
@@ -62,6 +61,6 @@ class Session:
             )
 
             if response.status_code == 200:
-                print("Граф успешно сгенерирован:")
+                print("Граф успешно сгенерирован")
         except requests.exceptions.RequestException as e:
             print(f"Ошибка соединения: {e}")
