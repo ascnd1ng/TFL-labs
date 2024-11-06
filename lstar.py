@@ -6,34 +6,26 @@ from session import Session
 
 
 class LStar(Session):
-    def __init__(self, letters):
+    def __init__(self, alphabet_str):
         super().__init__()
-        self.alphabet = list(letters)
-        self.suffixes = [""]
         self.main_table = {"": ['0']}
-        self.extended_table = {}
+        self.complementary_table = {}
+        self.suffixes = [""]
+        self.alphabet = list(alphabet_str)
+        self.epsilon = 'e'
 
-    def add_suffixes_from_word(self, word):
-        for i in range(len(word) - 1, -1, -1):
-            suffix = word[i:]
-            if suffix not in self.suffixes:
-                self.suffixes.append(suffix)
-
-                for key in self.main_table:
-                    response = self.check_membership(key + suffix)
-                    self.main_table[key].append(response)
-
-                for key in self.extended_table:
-                    response = self.check_membership(key + suffix)
-                    self.extended_table[key].append(response)
+    def build_main_prefixes(self):
+        for complementary_prefix, row in list(self.complementary_table.items()):
+            if row not in list(self.main_table.values()):
+                self.main_table[complementary_prefix] = row
+                self.complementary_table.pop(complementary_prefix)
 
     def add_prefix(self, prefix):
-        if prefix in self.extended_table or prefix in self.main_table:
+        if prefix in self.complementary_table or prefix in self.main_table:
             return
-        self.extended_table[prefix] = []
-
+        self.complementary_table[prefix] = []
         for suffix in self.suffixes:
-            self.extended_table[prefix].append(self.check_membership(
+            self.complementary_table[prefix].append(self.check_membership(
                 prefix + suffix))
 
     def extend_table(self):
@@ -42,14 +34,23 @@ class LStar(Session):
                 self.add_prefix(main_prefix + letter)
         self.build_main_prefixes()
 
-    def build_main_prefixes(self):
-        for key, value in list(self.extended_table.items()):
-            if value not in list(self.main_table.values()):
-                self.main_table[key] = value
-                self.extended_table.pop(key)
+    def add_suffixes_from_counter_example(self, counter_example):
+        for i in range(len(counter_example)):
+            suffix = counter_example[-i:]
+            if suffix not in self.suffixes:
+                self.suffixes.append(suffix)
 
-    def replace_empty_with_e(self, lst):
-        return ['e' if x == '' else x for x in lst]
+                for main_prefix in self.main_table:
+                    response = self.check_membership(main_prefix + suffix)
+                    self.main_table[main_prefix].append(response)
+
+                for complementary_prefix in self.complementary_table:
+                    response = self.check_membership(complementary_prefix + suffix)
+                    self.complementary_table[complementary_prefix].append(response)
+        self.build_main_prefixes()
+
+    def replace_empty_with_epsilon(self, lst):
+        return [self.epsilon if x == '' else x for x in lst]
 
     def get_table_json(self):
         main_prefixes = []
@@ -59,7 +60,7 @@ class LStar(Session):
         for main_prefix in self.main_table:
             main_prefixes.append(main_prefix)
 
-        for complementary_prefix in self.extended_table:
+        for complementary_prefix in self.complementary_table:
             complementary_prefixes.append(complementary_prefix)
 
         for suffix in self.suffixes:
@@ -71,10 +72,10 @@ class LStar(Session):
 
         for complimentary_prefix in complementary_prefixes:
             for i in range(len(suffixes)):
-                table.append(str(self.extended_table[complimentary_prefix][i]))
+                table.append(str(self.complementary_table[complimentary_prefix][i]))
 
-        main_prefixes = self.replace_empty_with_e(main_prefixes)
-        suffixes = self.replace_empty_with_e(suffixes)
+        main_prefixes = self.replace_empty_with_epsilon(main_prefixes)
+        suffixes = self.replace_empty_with_epsilon(suffixes)
         main_prefixes_str = " ".join(main_prefixes)
         complementary_prefixes_str = " ".join(complementary_prefixes)
         suffixes_str = " ".join(suffixes)
@@ -97,8 +98,8 @@ class LStar(Session):
         output_table.append(["+"] + [""] * (len(self.suffixes) - 1))
 
         # Добавляем строки с содержимым `extended_table`
-        for key in self.extended_table:
-            row = [key] + self.extended_table[key]
+        for key in self.complementary_table:
+            row = [key] + self.complementary_table[key]
             output_table.append(row)
 
         # Форматируем таблицу с помощью `tabulate`

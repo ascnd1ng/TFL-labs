@@ -6,17 +6,13 @@ if __name__ == '__main__':
     start_time = time.time()
 
     table = LStar('NSWE')
-    table.generate_graph(6, 5, 3)
+    table.generate_graph(4, 5, 2)
     table.extend_table()
-    table.build_main_prefixes()
-
     response = table.check_table(table.get_table_json())
 
     while response != "true":
-        table.add_suffixes_from_word(response)
-        table.build_main_prefixes()
+        table.add_suffixes_from_counter_example(response)
         table.extend_table()
-        table.build_main_prefixes()
         response = table.check_table(table.get_table_json())
         if response != "true":
             print(f'Новый контрпример: {response}')
