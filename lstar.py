@@ -36,7 +36,7 @@ class LStar(Session):
 
     def add_suffixes_from_counter_example(self, counter_example):
         for i in range(len(counter_example)):
-            suffix = counter_example[-i:]
+            suffix = counter_example[-1 - i:]
             if suffix not in self.suffixes:
                 self.suffixes.append(suffix)
 
@@ -87,20 +87,19 @@ class LStar(Session):
                 table_str]
 
     def __str__(self):
-        output_table = [[""] + self.suffixes]  # Заголовок с пустой ячейкой слева и суффиксами сверху
+        table_rows = [["Main prefixes / Suffixes"] + self.replace_empty_with_epsilon(self.suffixes)]
 
-        # Добавляем строки с содержимым `main_table`
-        for key in self.main_table:
-            row = [key] + self.main_table[key]
-            output_table.append(row)
+        for main_prefix in self.main_table:
+            row = [main_prefix] + self.main_table[main_prefix]
+            if main_prefix == '':
+                row[0] = self.epsilon
+            table_rows.append(row)
 
-        # Добавляем строку с разделителем "+"
-        output_table.append(["+"] + [""] * (len(self.suffixes) - 1))
+        table_rows.append(["Complementary prefixes"] + ["*"] * (len(self.suffixes) - 1))
 
-        # Добавляем строки с содержимым `extended_table`
-        for key in self.complementary_table:
-            row = [key] + self.complementary_table[key]
-            output_table.append(row)
+        for complementary_prefix in self.complementary_table:
+            row = [complementary_prefix] + self.replace_empty_with_epsilon(self.complementary_table[complementary_prefix])
 
-        # Форматируем таблицу с помощью `tabulate`
-        return tabulate(output_table, headers="firstrow", tablefmt="github")
+            table_rows.append(row)
+
+        return tabulate(table_rows, headers="firstrow", tablefmt="fancy_grid")

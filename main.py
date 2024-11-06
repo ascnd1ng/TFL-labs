@@ -2,23 +2,44 @@ import time
 
 from lstar import LStar
 
-if __name__ == '__main__':
-    start_time = time.time()
 
+def measure_time(func):
+    def wrapper():
+        start_time = time.time()
+        result = func()
+        end_time = time.time()
+        print(f"Время выполнения {func.__name__}: {end_time - start_time:.4f} секунд")
+        return result
+
+    return wrapper
+
+
+@measure_time
+def main():
     table = LStar('NSWE')
-    table.generate_graph(4, 5, 2)
+    print('Введите n:')
+    n = int(input())
+    print('Введите m:')
+    m = int(input())
+    print('Введите число выходов:')
+    exit_num = int(input())
+
+    table.generate_graph(n, m, exit_num)
+
     table.extend_table()
     response = table.check_table(table.get_table_json())
+    print(f'Контрпример: {response}')
 
-    while response != "true":
+    while True:
         table.add_suffixes_from_counter_example(response)
         table.extend_table()
         response = table.check_table(table.get_table_json())
         if response != "true":
-            print(f'Новый контрпример: {response}')
+            print(f'Контрпример: {response}')
+        else:
+            break
 
     print(table)
-    finish_time = time.time()
-    print(f'Успешно решено за {finish_time - start_time}')
 
 
+main()
