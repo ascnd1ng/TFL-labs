@@ -6,8 +6,12 @@ import requests
 class Session:
     def __init__(self):
         self.session = requests.Session()
+        self.check_membership_counter = 0
+        self.check_table_counter = 0
 
     def check_membership(self, word):
+        self.check_membership_counter += 1
+
         url = "http://127.0.0.1:8080/check_membership"
         try:
             response = self.session.post(
@@ -22,6 +26,8 @@ class Session:
             return None
 
     def check_table(self, args):
+        self.check_table_counter += 1
+
         data = {
             "main_prefixes": args[0],
             "complementary_prefixes": args[1],
@@ -44,11 +50,11 @@ class Session:
             print(f"check_table: {e}")
             return None
 
-    def generate_graph(self, n, m, exit_num):
+    def generate_graph(self, n, m, exit_num, wall_break):
         url = "http://127.0.0.1:8080/generate_graph"
         data = {
             "num_of_finish_edge": exit_num,  # количество конечных рёбер
-            "pr_of_break_wall": 1,  # вероятность "разрыва стены"
+            "pr_of_break_wall": wall_break,  # вероятность "разрыва стены"
             "width": m,  # ширина графа
             "height": n  # высота графа
         }

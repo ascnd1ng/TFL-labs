@@ -23,8 +23,10 @@ def main():
     m = int(input())
     print('Введите число выходов:')
     exit_num = int(input())
+    print('Определите разрывы стен:')
+    wall_break = int(input())
 
-    table.generate_graph(n, m, exit_num)
+    table.generate_graph(n, m, exit_num, wall_break)
 
     table.extend_table()
     response = table.check_table(table.get_table_json())
@@ -40,6 +42,7 @@ def main():
             break
 
     print(table)
+    print(f'Проверок таблицы: {table.check_table_counter}, Проверок вхождения: {table.check_membership_counter}')
 
 
 main()
