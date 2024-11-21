@@ -16,7 +16,6 @@ def measure_time(func):
 
 @measure_time
 def main():
-    table = LStar('NSWE')
     print('Введите n:')
     n = int(input())
     print('Введите m:')
@@ -25,6 +24,8 @@ def main():
     exit_num = int(input())
     print('Определите разрывы стен:')
     wall_break = int(input())
+
+    table = LStar('NSWE', n, m)
 
     table.generate_graph(n, m, exit_num, wall_break)
 
